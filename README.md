@@ -70,9 +70,7 @@ Copy this code and save it as a bookmark. Paste it in the URL section. To activa
 
 ```javascript
 javascript: (function () {
-  Game.LoadMod(
-    "[https://bdunks.github.io/garden-gnome/dist/gardenGnome.js](https://bdunks.github.io/garden-gnome/dist/gardenGnome.js)"
-  );
+  Game.LoadMod("https://bdunks.github.io/garden-gnome/gardenGnome.js");
 })();
 ```
 
@@ -88,7 +86,7 @@ I made this for fun, and felt like sharing in case anyone else would enjoy it.
 
 ## Status & Contributions
 
-This mod is provided **as-is**. It's been tested extensively using the [Garden Gnome Runner Tool](https://bdunks.github.io/garden-gnome/), as well in the real game over many months before initial release.
+This mod is provided **as-is**. It's been tested extensively using the [Garden Gnome Runner Tool](https://github.com/bdunks/garden-gnome-runner/), as well in the real game over many months before initial release.
 
 Garden Gnome is considered **feature complete** for its main goal: unlocking seeds and upgrades.
 

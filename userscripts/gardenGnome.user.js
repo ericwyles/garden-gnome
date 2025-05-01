@@ -14,7 +14,7 @@ const readyCheck = setInterval(() => {
     typeof Game.ready !== "undefined" &&
     Game.ready
   ) {
-    Game.LoadMod("https://bdunks.github.io/garden-gnome/dist/gardenGnome.js");
+    Game.LoadMod("https://bdunks.github.io/garden-gnome/gardenGnome.js");
     clearInterval(readyCheck);
   }
 }, 1000);
