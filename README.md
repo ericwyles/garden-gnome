@@ -14,19 +14,19 @@ It works on all Garden Levels, and given enough time (and a bit of luck!), it ca
 
 - **Automated Targeting:** Intelligently identifies the next seed or upgrade to target based on viable options and predefined priorities.
 - **Strategic Planting:** Uses specific garden layouts optimized for various single-parent and multi-parent mutations, following the wiki's [Mutation Setups](https://cookieclicker.fandom.com/wiki/Garden#Mutation_Setups). Layouts dynamically adjust to your current garden level.
-- **Synchronized Growth:** Synchronizes planting times so parent plants mature together, maximizing those tricky mutation chances. This includes:
+- **Synchronized Growth:** Synchronizes planting times so parent plants mature together, maximizing the window for mutation. This includes:
   - Synchronizing two-parent setups even when they have different growth times.
   - Skipping synchronization for "rolling" strategies (like attempting Crumbspore, Brown Mold, or upgrade drops).
 - **Frenzy-Aware Planting:** Holds off on planting during CPS buffs (Frenzies, Building Specials, etc.) to avoid wasting cookies when costs are inflated.
 - **Smart Harvesting & Pruning:** The gnome is quite tidy:
   - Harvests mature plants when they're the target for a garden upgrade drop.
-  - Harvests Queenbeets and Bakeberries just a tick before they decay to maximize cookie/lump yields at harvest.
-  - If Crumbspore or Brown Mold aren't unlocked yet, it lets Meddleweed live to one tick beforedecay to boost the chance of getting those spores.
+  - Harvests Queenbeets and Bakeberries just a tick before they decay to capture the cookie drop at harvest.
+  - If Crumbspore or Brown Mold aren't unlocked yet, it lets Meddleweed live to one tick before decay to maximize seed drop probability.
   - Automatically weeds out incorrectly planted crops or plants sitting where they shouldn't be according to the current strategy.
-  - Keeps only the _single oldest_ instance of each _locked_ species growing, freeing up precious garden space while waiting for that elusive unlock.
-  - Clears and restarts a mutation attempt if plants decay and the remaining arrangement can no longer achieve the target mutation (currently works _only_ for one-parent mutations).
-    - For example, in a Juicy Queenbeet attempt, if there are no longer any enclosed "rings" around an empty tile, the remaining Queenbeets will be cleared, and the attempt restarted.
-    - It considers all possible mutations for still-locked seeds. In an exception to the same Juicy Queenbeet attempt, if Shriekbulb or Duketater are still locked, it won't clear the plot until it couldn't achieve those mutations either.
+  - Keeps only the _single oldest_ instance of each _locked_ species growing, freeing up garden space for the next mutation attempt(s).
+  - Clears and restarts a mutation attempt if plants decay and the remaining arrangement can no longer achieve a new mutation (currently works _only_ for one-parent mutations).
+    - For example, in a Juicy Queenbeet attempt, if there are no longer any enclosed "rings" around an empty tile, the remaining Queenbeets will _generally_ be cleared, and the attempt restarted.
+    - However, it considers all possible mutations for still-locked seeds. In an exception to the same Juicy Queenbeet attempt, if Shriekbulb or Duketater are still locked, it won't clear the plot until it also can't plantthose mutations.
 - **Soil Optimization:** Automatically switches between Fertilizer (for faster growth) and Wood Chips (for better mutation odds) depending on whether plants are still growing or mature and waiting for mutations.
 - **Auto Sacrafice:** Sacrafices garden after all seeds and upgrades are unlocked for 10 sugar lumps, and continues the cycle again.
 
@@ -90,10 +90,25 @@ This mod is provided **as-is**. It's been tested extensively using the [Garden G
 
 Garden Gnome is considered **feature complete** for its main goal: unlocking seeds and upgrades.
 
-- **Pull Requests:** Found a bug or have a neat optimization? Well-documented PRs _might_ be reviewed and accepted, time permitting.
+- **Pull Requests:** Found a bug or have an optimization? Well-documented PRs are welcome, but please be patient on reviewe timing and acceptance.
 - **Feature Requests:** New feature ideas are unlikely to be implemented unless they come with a pull request.
-- **Bug Reports:** Feel free to report bugs, but please remember this is a hobby project. Responses and fixes might take a while (or might not happen, let's be honest!).
+- **Bug Reports:** Feel free to report bugs, but please remember this is a hobby project. Responses and fixes might take a while.
+
+## Development Lifecycle
+
+If you are interested in contributing, you can run and test locally by:
+
+- Run `npm run dev`
+- Adding the dev userscript (`./userscripts/gardenGnome.user.dev.js`) in your userscript manager (e.g., Tampermonkey).
+  - The template in the resository assumes a locally hosted [Garden Gnome Runner Tool](https://github.com/bdunks/garden-gnome-runner/) on port `5173` and this mod on port `8080`.
+- _Refresh Cookie Clicker_ (or Garden Gnome Runner) as you make changes to the mod.
+
+**Why the funky `npm run dev` command?**
+
+- `vite` does not directly serve the `./gardenGnome.js` from its dev server
+- The user script needs to access a complete `.js` file to load the mod
+  _Note_: I would welcome a pull request if it's possible to configure vite correctly to simply run `vite`
 
 ## Acknowledgements
 
-A huge thank you to the [**CookieMonsterTeam**](https://github.com/CookieMonsterTeam/CookieMonster)! Their work provided a nice project structure template, and sound logic for to run on each garden tick. And, of course, they've made and maintain a fantastic mod!
+A huge thank you to the [**CookieMonsterTeam**](https://github.com/CookieMonsterTeam/CookieMonster)! Their work provided a nice project structure template, and solid logic for to run on each garden tick. And, of course, they've made and maintain a fantastic mod!

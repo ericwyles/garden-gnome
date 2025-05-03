@@ -14,7 +14,7 @@ const readyCheck = setInterval(() => {
     typeof Game.ready !== "undefined" &&
     Game.ready
   ) {
-    Game.LoadMod("http://localhost:8081/gardenGnome.js");
+    Game.LoadMod("http://localhost:8080/gardenGnome.js");
     clearInterval(readyCheck);
   }
 }, 1000);
