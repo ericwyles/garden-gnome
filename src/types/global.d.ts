@@ -29,11 +29,21 @@ declare global {
     resets: number;
     cookiesPs: number;
     unbuffedCps: number;
+    buffs: Record<string, GameBuff>;
     auraMult: (aura: string) => number;
     Has: (thing: string) => boolean;
     HasUnlocked: (what: string) => number;
+    hasBuff: (buffName: string) => boolean;
     registerMod: (id: string, mod: Record<string, () => void>) => void;
     registerHook: (id: string, hook: () => void) => void;
+  }
+
+  interface GameBuff {
+    name: string;
+    time: number;
+    multCpS?: number;
+    power?: number;
+    [key: string]: any;
   }
 
   interface GameBuilding {

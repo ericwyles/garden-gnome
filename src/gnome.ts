@@ -45,7 +45,7 @@ const harvestBeforeDecay = [
 const getNeighborsData = (
   plotData: PlotData,
   targetX: number,
-  targetY: number
+  targetY: number,
 ): { neighs: Record<string, number>; neighsM: Record<string, number> } => {
   const neighs: Record<string, number> = {};
   const neighsM: Record<string, number> = {};
@@ -112,7 +112,7 @@ const canAnyTileMutate = (plotData: PlotData): boolean => {
       // If mutations are found, and the seed is NOT already locked
       // return true to signal .some() to stop and return true
       return potentialMutations.some((mutation) =>
-        unlockableSeeds.includes(mutation[0])
+        unlockableSeeds.includes(mutation[0]),
       );
     }
     // If no neighbors or no remaining mutations for this tile, return false to continue checking others
@@ -149,7 +149,7 @@ const processPlot = (plotData: PlotData, target?: string) => {
 
     if (layoutFullyMature && !canAnyTileMutate(plotData)) {
       Logger.debug(
-        "No potential mutations and plot is not in a valid immature layout state. Harvesting entire plot."
+        "No potential mutations and plot is not in a valid immature layout state. Harvesting entire plot.",
       );
       plotData
         .filter((t): t is NonEmptyTile => t.status === TileStatus.LayoutPlanted)
@@ -169,7 +169,7 @@ const processPlot = (plotData: PlotData, target?: string) => {
   plotData
     .filter(
       (t): t is NonEmptyTile =>
-        t.status === TileStatus.Locked && t.stage !== STAGE.mature
+        t.status === TileStatus.Locked && t.stage !== STAGE.mature,
     )
     .forEach(({ plant, age, x, y }) => {
       const species = plant.key;
@@ -185,7 +185,7 @@ const processPlot = (plotData: PlotData, target?: string) => {
   plotData
     .filter(
       (t): t is NonEmptyTile =>
-        t.status !== TileStatus.Empty && t.status !== TileStatus.Invalid
+        t.status !== TileStatus.Empty && t.status !== TileStatus.Invalid,
     )
     .forEach(({ plant, stage, status, ticksToDecay, x, y }) => {
       // Special handling to unlock Crumbsport and Brown Mold.  Note this also coveres locked meddleweed for very early run.
@@ -242,10 +242,10 @@ const shouldWaitForSync = (
   plotData: PlotData,
   target: string,
   isImmortal: number | undefined,
-  ticksToPlantedMaturity: number
+  ticksToPlantedMaturity: number,
 ): boolean => {
   const alreadyPlanted = plotData.some(
-    (t) => t.status === TileStatus.LayoutPlanted && t.plant.key === plantKey
+    (t) => t.status === TileStatus.LayoutPlanted && t.plant.key === plantKey,
   );
   // In larger plots, the Tidygrass planted right next to the Eldewort will not plant without a buffer:
   // since it "matures faster" (due to Elderwort effects), the others plant first, so it needs a couple tick buffer
@@ -254,6 +254,41 @@ const shouldWaitForSync = (
   // Don't worry about syncing plots if we're trying to plant as fast as possible (garden upgrades) or plants are immortal
   const ignoreSync = isRollingTarget(target) || isImmortal;
   return alreadyPlanted && !ignoreSync && !everdaisyBuffer;
+};
+
+/**
+ * Determines whether seed planting should be allowed based on current CPS buffs.
+ *
+ * Planting is blocked during temporary buffs (Frenzy, Click Frenzy, building buffs, etc.)
+ * because seed costs are multiplied by the CPS multiplier, making them expensive.
+ *
+ * However, long-running loan buffs (Loan 1, 2, 3) last for days, so we don't want to
+ * block planting for the entire duration. This function allows planting during loans
+ * as long as there are no additional temporary buffs stacked on top.
+ *
+ * @returns True if planting should proceed, false if blocked by temporary buffs.
+ */
+const shouldAllowPlanting = (): boolean => {
+  // No buffs active - safe to plant
+  if (Game.cookiesPs <= Game.unbuffedCps) {
+    return true;
+  }
+
+  // Check for active loan buffs (Loan 1, 2, or 3)
+  const loanBuffs = ["Loan 1", "Loan 2", "Loan 3"];
+  const activeLoan = loanBuffs.find((loanName) => Game.hasBuff(loanName));
+
+  if (activeLoan) {
+    const loanBuff = Game.buffs[activeLoan];
+    const loanMultiplier = loanBuff?.multCpS ?? 1;
+
+    // Allow planting if CPS is only buffed by the loan (no additional temporary buffs)
+    const expectedCps = Game.unbuffedCps * loanMultiplier;
+    return Game.cookiesPs <= expectedCps;
+  }
+
+  // Other buffs are active - block planting
+  return false;
 };
 
 /**
@@ -281,8 +316,8 @@ const plantSeeds = (target: string, plotData: PlotData) => {
           plotData,
           target,
           t.plant.immortal,
-          ticksToPlantedMaturity
-        )
+          ticksToPlantedMaturity,
+        ),
     )
     .forEach((t) => {
       if (ticksToUnplantedMaturity >= ticksToPlantedMaturity) {
@@ -322,7 +357,8 @@ const gnomeChores = (): void => {
 
   // Keep planting even if a locked plant is growing, unless it's a lump as we test a few things and we don't want to lose it.
   // Also hold off on planting if we're in the middle of a frenzy, building buff, etc.
-  if (target && Game.cookiesPs <= Game.unbuffedCps) {
+  // Long-running loan buffs are allowed since they last for days.
+  if (target && shouldAllowPlanting()) {
     plantSeeds(target, plotData);
   }
 
