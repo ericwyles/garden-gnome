@@ -259,12 +259,12 @@ const shouldWaitForSync = (
 /**
  * Determines whether seed planting should be allowed based on current CPS buffs.
  *
- * Planting is blocked during temporary buffs (Frenzy, Click Frenzy, building buffs, etc.)
+ * Planting is blocked during temporary buffs (Click Frenzy, building buffs, etc.)
  * because seed costs are multiplied by the CPS multiplier, making them expensive.
  *
- * However, long-running loan buffs (Loan 1, 2, 3) last for days, so we don't want to
- * block planting for the entire duration. This function allows planting during loans
- * as long as there are no additional temporary buffs stacked on top.
+ * However, long-running loan buffs (Loan 1, 2, 3) and Frenzy are allowed since they
+ * may be active frequently during normal gameplay. This function allows planting
+ * during these buffs as long as there are no additional temporary buffs stacked on top.
  *
  * @returns True if planting should proceed, false if blocked by temporary buffs.
  */
@@ -278,12 +278,16 @@ const shouldAllowPlanting = (): boolean => {
   const loanBuffs = ["Loan 1", "Loan 2", "Loan 3"];
   const activeLoan = loanBuffs.find((loanName) => Game.hasBuff(loanName));
 
-  if (activeLoan) {
-    const loanBuff = Game.buffs[activeLoan];
-    const loanMultiplier = loanBuff?.multCpS ?? 1;
+  // Check for active Frenzy buff
+  const activeFrenzy = Game.hasBuff("Frenzy");
 
-    // Allow planting if CPS is only buffed by the loan (no additional temporary buffs)
-    const expectedCps = Game.unbuffedCps * loanMultiplier;
+  if (activeLoan || activeFrenzy) {
+    const buffName = activeLoan || "Frenzy";
+    const activeBuff = Game.buffs[buffName];
+    const buffMultiplier = activeBuff?.multCpS ?? 1;
+
+    // Allow planting if CPS is only buffed by the loan/frenzy (no additional temporary buffs)
+    const expectedCps = Game.unbuffedCps * buffMultiplier;
     return Game.cookiesPs <= expectedCps;
   }
 
