@@ -346,17 +346,23 @@ const plantSeeds = (target: string, plotData: PlotData) => {
  * Determines the current target, gets the corresponding layout, processes the plot
  * (harvesting, pruning), updates the plot data, plants seeds according to the strategy,
  * and optimizes the soil type. Planting is skipped if CPS buffs are active.
+ * After processing the plot, the target is recalculated in case harvesting unlocked
+ * new plants, allowing the strategy to transition to the next target on the same tick.
  */
 const gnomeChores = (): void => {
-  const target = getCurrentTarget();
-  const layout = getLayoutConfigForTarget(target);
+  let target = getCurrentTarget();
+  let layout = getLayoutConfigForTarget(target);
 
   // Get initial plot data to drive weeding, etc.
   let plotData = getEnhancedPlotData(layout, target);
 
   processPlot(plotData, target);
 
-  // Update plot data after plot processing (weeding, etc).
+  // Recalculate target after processing, as harvesting may have unlocked new plants
+  target = getCurrentTarget();
+  layout = getLayoutConfigForTarget(target);
+
+  // Update plot data after plot processing (weeding, etc) with the new target
   plotData = getEnhancedPlotData(layout, target);
 
   // Keep planting even if a locked plant is growing, unless it's a lump as we test a few things and we don't want to lose it.
