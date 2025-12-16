@@ -247,13 +247,14 @@ const shouldWaitForSync = (
   const alreadyPlanted = plotData.some(
     (t) => t.status === TileStatus.LayoutPlanted && t.plant.key === plantKey,
   );
-  // In larger plots, the Tidygrass planted right next to the Eldewort will not plant without a buffer:
+  // In larger plots, the Tidygrass planted right next to the Elderwort will not plant without a buffer:
   // since it "matures faster" (due to Elderwort effects), the others plant first, so it needs a couple tick buffer
+  // Wait when ticks to maturity >= 78 (too early), allow planting when < 78 (close enough to sync)
   const everdaisyBuffer =
     target === "everdaisy" && ticksToPlantedMaturity >= 78; // Standard is 80; so this gives a 2-tick buffer
   // Don't worry about syncing plots if we're trying to plant as fast as possible (garden upgrades) or plants are immortal
   const ignoreSync = isRollingTarget(target) || isImmortal;
-  return alreadyPlanted && !ignoreSync && !everdaisyBuffer;
+  return alreadyPlanted && !ignoreSync && everdaisyBuffer;
 };
 
 /**
@@ -348,6 +349,7 @@ const plantSeeds = (target: string, plotData: PlotData) => {
  * and optimizes the soil type. Planting is skipped if CPS buffs are active.
  * After processing the plot, the target is recalculated in case harvesting unlocked
  * new plants, allowing the strategy to transition to the next target on the same tick.
+ * If the target changes, the plot is processed again to clear out the old setup.
  */
 const gnomeChores = (): void => {
   let target = getCurrentTarget();
@@ -359,10 +361,17 @@ const gnomeChores = (): void => {
   processPlot(plotData, target);
 
   // Recalculate target after processing, as harvesting may have unlocked new plants
-  target = getCurrentTarget();
-  layout = getLayoutConfigForTarget(target);
+  const newTarget = getCurrentTarget();
 
-  // Update plot data after plot processing (weeding, etc) with the new target
+  // If target changed, process plot again with new target to clear old setup
+  if (newTarget !== target) {
+    target = newTarget;
+    layout = getLayoutConfigForTarget(target);
+    plotData = getEnhancedPlotData(layout, target);
+    processPlot(plotData, target);
+  }
+
+  // Update plot data after plot processing (weeding, etc) with the current target
   plotData = getEnhancedPlotData(layout, target);
 
   // Keep planting even if a locked plant is growing, unless it's a lump as we test a few things and we don't want to lose it.

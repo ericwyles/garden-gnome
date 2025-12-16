@@ -99,10 +99,11 @@ export const optimizeSoil = (
     // If no age-slowing plant is present and either the plant is an upgrade target
     // or it takes more than 0 ticks to mature (and doesn't have fast maturing parents),
     // use fertilizer. Otherwise, we're attempting a mutation so use woodchips.
+    // When nothing is planted yet (ticksToLayoutMaturity === -Infinity), use fertilizer to grow the setup.
     const targetSoil =
       !hasAgeSlowingPlants &&
       (isUpgradeTarget(target) ||
-        (ticksToLayoutMaturity > 0 && !hasFastMaturingParents))
+        ticksToLayoutMaturity !== 0 && !hasFastMaturingParents)
         ? fertilizer
         : woodChips;
 
